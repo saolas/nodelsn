@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple REST API UI</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    form, .response { margin-bottom: 20px; }
+    input, textarea, button { margin: 5px 0; display: block; width: 300px; padding: 8px; }
+    pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+
+  <h1>Simple REST API Client</h1>
+
+  <!-- Get All Items -->
+  <section>
+    <h2>Get All Items</h2>
+    <button onclick="getAllItems()">Fetch All</button>
+    <div class="response" id="allItems"></div>
+  </section>
+
+  <!-- Create Item -->
+  <section>
+    <h2>Create Item</h2>
+    <form onsubmit="createItem(event)">
+      <input type="text" id="createName" placeholder="Name" required>
+      <textarea id="createDesc" placeholder="Description" required></textarea>
+      <button type="submit">Create</button>
+    </form>
+  </section>
+
+  <!-- Update Item -->
+  <section>
+    <h2>Update Item</h2>
+    <form onsubmit="updateItem(event)">
+      <input type="number" id="updateId" placeholder="Item ID" required>
+      <input type="text" id="updateName" placeholder="New Name">
+      <textarea id="updateDesc" placeholder="New Description"></textarea>
+      <button type="submit">Update</button>
+    </form>
+  </section>
+
+  <!-- Get Item by ID -->
+  <section>
+    <h2>Get Item by ID</h2>
+    <form onsubmit="getItemById(event)">
+      <input type="number" id="getId" placeholder="Item ID" required>
+      <button type="submit">Get</button>
+    </form>
+    <div class="response" id="singleItem"></div>
+  </section>
+
+  <!-- Delete Item -->
+  <section>
+    <h2>Delete Item</h2>
+    <form onsubmit="deleteItem(event)">
+      <input type="number" id="deleteId" placeholder="Item ID" required>
+      <button type="submit">Delete</button>
+    </form>
+  </section>
+
+  <script>
+    const baseUrl = 'http://localhost:3000';
+
+    function getAllItems() {
+      fetch(baseUrl + '/getitems')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('allItems').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        });
+    }
+
+    function createItem(event) {
+      event.preventDefault();
+      const name = document.getElementById('createName').value;
+      const description = document.getElementById('createDesc').value;
+
+      fetch(baseUrl + '/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      })
+      .then(res => res.json())
+      .then(data => alert(`Created: ${JSON.stringify(data)}`));
+    }
+
+    function updateItem(event) {
+      event.preventDefault();
+      const id = document.getElementById('updateId').value;
+      const name = document.getElementById('updateName').value;
+      const description = document.getElementById('updateDesc').value;
+
+      fetch(`${baseUrl}/items/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      })
+      .then(res => res.json())
+      .then(data => alert(`Updated: ${JSON.stringify(data)}`));
+    }
+
+    function getItemById(event) {
+      event.preventDefault();
+      const id = document.getElementById('getId').value;
+
+      fetch(`${baseUrl}/items/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('singleItem').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        });
+    }
+
+    function deleteItem(event) {
+      event.preventDefault();
+      const id = document.getElementById('deleteId').value;
+
+      fetch(`${baseUrl}/items/${id}`, {
+        method: 'DELETE'
+      })
+      .then(res => {
+        if (res.status === 204) {
+          alert('Deleted successfully.');
+        } else {
+          res.json().then(data => alert(JSON.stringify(data)));
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
